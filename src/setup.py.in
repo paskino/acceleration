@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+language_level=3
+import setuptools
+from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Distutils import build_ext
+
+import os
+import sys
+import numpy
+import platform	
+
+	
+library_include_path = ""
+library_lib_path = ""
+try:
+    library_include_path = os.environ['LIBRARY_INC']
+    library_lib_path = os.environ['LIBRARY_LIB']
+except:
+    library_include_path = os.environ['PREFIX']+'/include'
+    pass
+    
+extra_include_dirs = [numpy.get_include(), library_include_path]
+#extra_library_dirs = [os.path.join(library_include_path, "..", "lib")]
+extra_compile_args = []
+extra_library_dirs = [library_lib_path]
+extra_compile_args = []
+extra_link_args = []
+extra_libraries = ['fdiff']
+
+print ("extra_library_dirs " , extra_library_dirs)
+
+extra_include_dirs += ["."]
+
+if platform.system() == 'Windows':				   
+    extra_compile_args[0:] = ['/DWIN32','/EHsc','/DBOOST_ALL_NO_LIB' , '/openmp' ]   
+else:
+    extra_compile_args = ['-fopenmp','-O2', '-funsigned-char', '-Wall', '-std=c++0x']
+    extra_libraries += [@EXTRA_OMP_LIB@]
+    
+setup(
+    name='finite_diff',
+	description='Finite Difference Benchmark',
+	version=0.1,
+    cmdclass = {'build_ext': build_ext},
+    ext_modules = [Extension("finite_diff",
+                             sources=[os.path.join("." , "src", "finite_difference.pyx" ) ],
+                             include_dirs=extra_include_dirs, 
+							 library_dirs=extra_library_dirs, 
+							 extra_compile_args=extra_compile_args, 
+							 libraries=extra_libraries ), 
+    
+    ],
+	zip_safe = False,	
+	packages = {'finite_diff'},
+)
