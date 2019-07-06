@@ -43,7 +43,7 @@ setup(
 	description='Finite Difference Benchmark',
 	version=0.1,
     cmdclass = {'build_ext': build_ext},
-    ext_modules = [Extension("finite_diff",
+    ext_modules = [Extension("edo.finite_diff",
                              sources=[os.path.join("." , "src", "finite_difference.pyx" ) ],
                              include_dirs=extra_include_dirs, 
 							 library_dirs=extra_library_dirs, 

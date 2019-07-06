@@ -123,7 +123,7 @@ if (PYTHONINTERP_FOUND)
       else()
         add_custom_command(OUTPUT ${OUTPUT}
                        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff ${CMAKE_CURRENT_BINARY_DIR}/ccpi
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff ${CMAKE_CURRENT_BINARY_DIR}/edo
                        COMMAND ${CMAKE_COMMAND} -E env PREFIX=${CMAKE_SOURCE_DIR}/src/
                                                        LIBRARY_INC=${CMAKE_SOURCE_DIR}/src
                                                        LIBRARY_LIB=${CMAKE_BINARY_DIR}/
@@ -132,7 +132,7 @@ if (PYTHONINTERP_FOUND)
                        DEPENDS fdiff)
       endif()
       #set (PYTHON_DEST ${CMAKE_INSTALL_PREFIX}/python/)
-      install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/ccpi 
+      install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/edo 
               DESTINATION ${PYTHON_DEST})
       
     endif()
