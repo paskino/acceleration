@@ -102,3 +102,35 @@ int fdiff_for_simd(float *inimage, float *outimage, long nx, long ny, int direct
     return 0;
 
 }
+
+int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int direction ){
+    long index_low, index_high, i, j;
+    if (direction == 0){
+        // assuming the image is stored as C array Y,X
+        #pragma omp for
+        for (i=0;i<ny*(nx-1); i++){
+            //for (i=0;i<nx-1; i++){
+                index_low = i ;
+                index_high = index_low + 1;
+                outimage[index_low] = inimage[index_high] - inimage[index_low];
+            //}
+            // boundary condition: nearest
+            outimage[index_high] = outimage[index_low];
+        }
+        
+    } else if (direction == 1) {
+        #pragma omp for
+        for (i=0;i<nx*(ny-1); i++){
+            //for (j=0;j<ny-1; j++){
+                index_low = i ;
+                index_high = index_low + nx;
+                outimage[index_low] = inimage[index_high] - inimage[index_low];
+            //}
+            // boundary condition: nearest
+            outimage[index_high] = outimage[index_low];
+        }            
+    }
+
+    return 0;
+
+}
