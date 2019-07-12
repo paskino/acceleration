@@ -43,7 +43,6 @@ int fdiff_for_unrolled(float *inimage, float *outimage, long nx, long ny, int di
     long index_low, index_high, i, j;
     if (direction == 0){
         // assuming the image is stored as C array Y,X
-        //#pragma omp simd
         for (i=0;i<ny*(nx-1); i++){
             //for (i=0;i<nx-1; i++){
                 index_low = i ;
@@ -55,7 +54,6 @@ int fdiff_for_unrolled(float *inimage, float *outimage, long nx, long ny, int di
         }
         
     } else if (direction == 1) {
-        //#pragma omp simd
         for (i=0;i<nx*(ny-1); i++){
             //for (j=0;j<ny-1; j++){
                 index_low = i ;
@@ -133,4 +131,17 @@ int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int di
 
     return 0;
 
+}
+
+int fdiff_parallel_whole(float *inimage, float *outimagex, float *outimagey, long nx, long ny){
+    int i=0;
+    float *outimages[2];
+    outimages[0] = outimagex;
+    outimages[1] = outimagey;
+    int ret[2];
+    #pragma omp for
+    for (i=0;i<2;i++){
+        ret[i] = fdiff_for_unrolled(inimage, outimages[i], nx, ny, i);
+    }
+    return ret[0]+ret[1];
 }
