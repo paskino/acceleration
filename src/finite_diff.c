@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "omp.h"
 
 int main(int argc, char **argv){
 
@@ -139,9 +140,13 @@ int fdiff_parallel_whole(float *inimage, float *outimagex, float *outimagey, lon
     outimages[0] = outimagex;
     outimages[1] = outimagey;
     int ret[2];
-    #pragma omp for
-    for (i=0;i<2;i++){
-        ret[i] = fdiff_for_unrolled(inimage, outimages[i], nx, ny, i);
+    #pragma omp parallel
+    //for (i=0;i<2;i++)
+    {
+        ret[0] = fdiff_for_unrolled(inimage, outimagex, nx, ny, 1);
+        ret[1] = fdiff_for_unrolled(inimage, outimagey, nx, ny, 1);
+        ret[0] = fdiff_for_unrolled(inimage, outimagex, nx, ny, 1);
+        ret[1] = fdiff_for_unrolled(inimage, outimagey, nx, ny, 1);
     }
     return ret[0]+ret[1];
 }
