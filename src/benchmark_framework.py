@@ -32,8 +32,10 @@ dxp = image * 0.
 dyp = image * 0.
 dxw = image * 0.
 dyw = image * 0.
+dxps = image * 0.
+dyps = image * 0.
 
-N = 1
+N = 100
 t0 = time.time()
 for i in range(N):
     finite_difference(image, dx, 0, 0)
@@ -43,11 +45,12 @@ for i in range(N):
 # repeat_func(N,finite_difference,image, dy,1,0)
 t1 = time.time()
 # print ("Baseline Python", t1a-t0, 'Cython', t1-t1a)
+print ("Baseline", t1-t0)
 for i in range(N):
     finite_difference(image, dxs, 0, 2)
     finite_difference(image, dys, 1, 2)
 t2 = time.time()
-print ("#pragma omp simd", t1-t0)
+print ("#pragma omp simd", t2-t1)
 for i in range(N):
     finite_difference(image, dxu, 1, 1)
     finite_difference(image, dyu, 1, 1)
@@ -71,10 +74,13 @@ for i in range(N):
     finite_difference_whole(image, dxw, dyw, 0)
 t6 = time.time()
 print ("#pragma omp n2", t6-t5)
+for i in range(N):
+    finite_difference_whole(image, dxps, dyps, 1)
+t7 = time.time()
+print ("parallel for / simd", t7-t6)
 
-
-print ("Baseline {}\nSIMD {}\nunrolled {}\nParallel {}\nFramework {}\nparallel whole {}".format(
-    t1-t0,t2-t1,t3-t2,t4-t3,t5-t4, t6-t5))
+#print ("Baseline {}\nSIMD {}\nunrolled {}\nParallel {}\nFramework {}\nparallel whole {}".format(
+#    t1-t0,t2-t1,t3-t2,t4-t3,t5-t4, t6-t5))
 
 
 plt.subplot(2,5,1)

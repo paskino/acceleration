@@ -103,10 +103,10 @@ int fdiff_for_simd(float *inimage, float *outimage, long nx, long ny, int direct
 }
 
 int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int direction ){
-    long index_low, index_high, i, j;
+    long index_low, index_high, i;
     if (direction == 0){
         // assuming the image is stored as C array Y,X
-        #pragma omp for
+        #pragma omp parallel for private(index_high, index_low) shared(i)
         for (i=0;i<ny*(nx-1); i++){
             //for (i=0;i<nx-1; i++){
                 index_low = i ;
@@ -118,7 +118,7 @@ int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int di
         }
         
     } else if (direction == 1) {
-        #pragma omp for
+        #pragma omp parallel for private(index_high, index_low) shared(i)
         for (i=0;i<nx*(ny-1); i++){
             //for (j=0;j<ny-1; j++){
                 index_low = i ;
@@ -134,19 +134,32 @@ int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int di
 
 }
 
+int fdiff_parallel_for_simd(float *inimage, float *outimagex, float *outimagey, long nx, long ny){
+    int i=0;
+    float *outimages[2];
+    outimages[0] = outimagex;
+    outimages[1] = outimagey;
+    int ret[2];
+    #pragma omp parallel for
+    for (i=0;i<2;i++)
+    {
+        ret[i] = fdiff_for_simd(inimage, outimages[i], nx, ny, i);
+        //ret[1] = fdiff_for_unrolled(inimage, outimagey, nx, ny, 1);
+    }
+    return ret[0]+ret[1];
+}
+
 int fdiff_parallel_whole(float *inimage, float *outimagex, float *outimagey, long nx, long ny){
     int i=0;
     float *outimages[2];
     outimages[0] = outimagex;
     outimages[1] = outimagey;
     int ret[2];
-    #pragma omp parallel
-    //for (i=0;i<2;i++)
+    #pragma omp parallel for
+    for (i=0;i<2;i++)
     {
-        ret[0] = fdiff_for_unrolled(inimage, outimagex, nx, ny, 1);
-        ret[1] = fdiff_for_unrolled(inimage, outimagey, nx, ny, 1);
-        ret[0] = fdiff_for_unrolled(inimage, outimagex, nx, ny, 1);
-        ret[1] = fdiff_for_unrolled(inimage, outimagey, nx, ny, 1);
+        ret[i] = fdiff_for_unrolled(inimage, outimages[i], nx, ny, i);
+        //ret[1] = fdiff_for_unrolled(inimage, outimagey, nx, ny, 1);
     }
     return ret[0]+ret[1];
 }
