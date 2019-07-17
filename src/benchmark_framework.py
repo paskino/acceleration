@@ -11,8 +11,9 @@ from ccpi.optimisation.operators import FiniteDiff
 data_dir = '.'
 which = 'camera.png'
 size = (2048,2048)
+#size = (512,512)
 loader = TestData()
-data = loader.load(TestData.CAMERA, size=size)
+data = loader.load(TestData.CAMERA , size=size)
 fdx = FiniteDiff(data.geometry)
 fdy = FiniteDiff(data.geometry, direction=1)
 outdatay = data * 0.
@@ -21,6 +22,7 @@ outdatax = data * 0.
 
 image = numpy.asarray(Image.open(os.path.join(data_dir, which)).convert('L').resize(size),
         dtype=numpy.float32)
+image = data.as_array()
 print (image.dtype, image.shape)
 dx = image * 0.
 dy = image * 0.
@@ -35,7 +37,7 @@ dyw = image * 0.
 dxps = image * 0.
 dyps = image * 0.
 
-N = 100
+N = 1000
 t0 = time.time()
 for i in range(N):
     finite_difference(image, dx, 0, 0)
@@ -52,10 +54,9 @@ for i in range(N):
 t2 = time.time()
 print ("#pragma omp simd", t2-t1)
 for i in range(N):
-    finite_difference(image, dxu, 1, 1)
+    finite_difference(image, dxu, 0, 1)
     finite_difference(image, dyu, 1, 1)
-    finite_difference(image, dxu, 1, 1)
-    finite_difference(image, dyu, 1, 1)
+    
 t3 = time.time()
 print ("unrolled", t3-t2)
 for i in range(N):
@@ -73,11 +74,11 @@ print ("numpy", t5-t4)
 for i in range(N):
     finite_difference_whole(image, dxw, dyw, 0)
 t6 = time.time()
-print ("#pragma omp n2", t6-t5)
+print ("finite_difference_whole method 0", t6-t5)
 for i in range(N):
-    finite_difference_whole(image, dxps, dyps, 1)
+    finite_difference_whole(image, dxps, dyps, 2)
 t7 = time.time()
-print ("parallel for / simd", t7-t6)
+print ("parallel concurrent", t7-t6)
 
 #print ("Baseline {}\nSIMD {}\nunrolled {}\nParallel {}\nFramework {}\nparallel whole {}".format(
 #    t1-t0,t2-t1,t3-t2,t4-t3,t5-t4, t6-t5))

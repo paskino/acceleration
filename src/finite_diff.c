@@ -159,8 +159,30 @@ int fdiff_parallel_whole(float *inimage, float *outimagex, float *outimagey, lon
     #pragma omp parallel for
     for (i=0;i<2;i++)
     {
-        ret[i] = fdiff_for_unrolled(inimage, outimages[i], nx, ny, i);
+        ret[i] = fdiff_for(inimage, outimages[i], nx, ny, i);
         //ret[1] = fdiff_for_unrolled(inimage, outimagey, nx, ny, 1);
     }
     return ret[0]+ret[1];
+}
+
+
+int fdiff_for_parallel_concurrent(float *inimage, float *outimagex, float *outimagey,  long nx, long ny){
+    long index_low, index_high_x, index_high_y, i,j;
+    
+    #pragma omp parallel for private(index_high_x, index_high_y, index_low) shared(i,j)
+    for (j=0;j<ny-1; j++){
+        for (i=0;i<nx; i++){
+            index_low = i + j * nx;
+            index_high_x = index_low+1;
+            index_high_y = index_low + nx;
+            outimagex[index_low] = inimage[index_high_x] - inimage[index_low];
+            outimagey[index_low] = inimage[index_high_y] - inimage[index_low];
+        }
+        // boundary condition: nearest
+        outimagex[index_high_x] = outimagex[index_low];
+        outimagey[index_high_y] = outimagey[index_low];
+    }            
+
+    return 0;
+
 }
