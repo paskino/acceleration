@@ -25,8 +25,9 @@ int fdiff_for(float *inimage, float *outimage, long nx, long ny, int direction )
         }
         
     } else if (direction == 1) {
-        for (i=0;i<nx; i++){
-            for (j=0;j<ny-1; j++){
+        for (j=0;j<ny-1; j++){
+            for (i=0;i<nx; i++){
+            
                 index_low = i + j * nx;
                 index_high = i + (j+1)*nx;
                 outimage[index_low] = inimage[index_high] - inimage[index_low];
@@ -103,7 +104,7 @@ int fdiff_for_simd(float *inimage, float *outimage, long nx, long ny, int direct
 }
 
 int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int direction ){
-    long index_low, index_high, i;
+    long index_low, index_high, i,j;
     if (direction == 0){
         // assuming the image is stored as C array Y,X
         #pragma omp parallel for private(index_high, index_low) shared(i)
@@ -118,13 +119,13 @@ int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int di
         }
         
     } else if (direction == 1) {
-        #pragma omp parallel for private(index_high, index_low) shared(i)
-        for (i=0;i<nx*(ny-1); i++){
-            //for (j=0;j<ny-1; j++){
-                index_low = i ;
-                index_high = index_low + nx;
+        #pragma omp parallel for private(index_high, index_low) shared(i,j)
+        for (j=0;j<ny-1; j++){
+            for (i=0;i<nx; i++){
+                index_low = i + j * nx;
+                index_high = i + (j+1)*nx;
                 outimage[index_low] = inimage[index_high] - inimage[index_low];
-            //}
+            }
             // boundary condition: nearest
             outimage[index_high] = outimage[index_low];
         }            
