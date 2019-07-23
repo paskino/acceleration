@@ -24,31 +24,90 @@ dll = os.path.abspath(os.path.join(
 print ("dll location", dll)
 fdiff = ctypes.cdll.LoadLibrary(dll)
 
+
+def axpby(a,b,out,A,B,dtype=numpy.float64):
+
+
+    c_float_p = ctypes.POINTER(ctypes.c_float)
+    c_double_p = ctypes.POINTER(ctypes.c_double)
+
+    if a.dtype != dtype:
+        a = a.astype(dtype)
+    if b.dtype != dtype:
+        b = b.astype(dtype)
+    
+    if dtype == numpy.float32:
+        a_p = a.ctypes.data_as(c_float_p)
+        b_p = b.ctypes.data_as(c_float_p)
+        out_p = out.ctypes.data_as(c_float_p)
+
+    elif dtype == numpy.float64:
+        a = a.astype(numpy.float64)
+        b = b.astype(numpy.float64)
+        a_p = a.ctypes.data_as(c_float_p)
+        b_p = b.ctypes.data_as(c_float_p)
+        out_p = out.ctypes.data_as(c_float_p)
+    else:
+        raise TypeError('Unsupported type {}. Expecting numpy.float32 or numpy.float64'.format(dtype))
+
+    out = numpy.empty_like(a)
+
+    
+    # int psaxpby(float * x, float * y, float * out, float a, float b, long size)
+    fdiff.saxpby.argtypes = [ctypes.POINTER(ctypes.c_float), # pointer to the first array 
+                              ctypes.POINTER(ctypes.c_float), # pointer to the second array 
+                              ctypes.POINTER(ctypes.c_float), # pointer to the third array 
+                              ctypes.c_float,                 # type of A (float)
+                              ctypes.c_float,                 # type of B (float)
+                              ctypes.c_long]                  # type of size of first array 
+    fdiff.daxpby.argtypes = [ctypes.POINTER(ctypes.c_double), # pointer to the first array 
+                              ctypes.POINTER(ctypes.c_double), # pointer to the second array 
+                              ctypes.POINTER(ctypes.c_double), # pointer to the third array 
+                              ctypes.c_double,                 # type of A (c_double)
+                              ctypes.c_double,                 # type of B (c_double)
+                              ctypes.c_long]                  # type of size of first array 
+
+    if dtype == numpy.float32:
+        return fdiff.saxpby(a_p, b_p, out_p, A, B, a.size)
+    elif dtype == numpy.float64:
+        return fdiff.daxpby(a_p, b_p, out_p, A, B, a.size)
+
+
 c_float_p = ctypes.POINTER(ctypes.c_float)
-a = a.astype(numpy.float32)
-b = b.astype(numpy.float32)
-out = numpy.empty_like(a)
+c_double_p = ctypes.POINTER(ctypes.c_double)
+dtype = numpy.float32
+a = a.astype(dtype)
+b = b.astype(dtype)
+    
+if dtype == numpy.float32:
+    a_p = a.ctypes.data_as(c_float_p)
+    b_p = b.ctypes.data_as(c_float_p)
+    out = numpy.empty_like(a)
+    out_p = out.ctypes.data_as(c_float_p)
+    # int psaxpby(float * x, float * y, float * out, float a, float b, long size)
+    fdiff.saxpby.argtypes = [ctypes.POINTER(ctypes.c_float), # pointer to the first array 
+                              ctypes.POINTER(ctypes.c_float), # pointer to the second array 
+                              ctypes.POINTER(ctypes.c_float), # pointer to the third array 
+                              ctypes.c_float,                 # type of A (float)
+                              ctypes.c_float,                 # type of B (float)
+                              ctypes.c_long]                  # type of size of first array 
+    
 
-a_p = a.ctypes.data_as(c_float_p)
-b_p = b.ctypes.data_as(c_float_p)
-out_p = out.ctypes.data_as(c_float_p)
 
-# int psaxpby(float * x, float * y, float * out, float a, float b, long size)
-fdiff.psaxpby.argtypes = [ctypes.POINTER(ctypes.c_float), # pointer to the first array 
-                          ctypes.POINTER(ctypes.c_float), # pointer to the second array 
-                          ctypes.POINTER(ctypes.c_float), # pointer to the third array 
-                          ctypes.c_float,                 # type of A (float)
-                          ctypes.c_float,                 # type of B (float)
-                          ctypes.c_long]                  # type of size of first array 
-
-
-N = 10
-fdiff.psaxpby(a_p, b_p, out_p, A, B, a.size)
+N = 100
+fdiff.saxpby(a_p, b_p, out_p, A, B, a.size)
 t0 = time.time()
 for i in range(N):
-    fdiff.psaxpby(a_p, b_p, out_p, A, B, a.size)
+    fdiff.saxpby(a_p, b_p, out_p, A, B, a.size)
 t1 = time.time()
-print ("psaxpby", t1-t0)
+print ("saxpby", t1-t0)
+
+axpby(a, b, out, A, B, numpy.float32)
+t0 = time.time()
+for i in range(N):
+    axpby(a, b, out, A, B, numpy.float32)
+t1 = time.time()
+print ("axpby", t1-t0)
 
 out_numpy = numpy.empty_like(a)
 out_numpy2 = numpy.empty_like(a)
@@ -70,7 +129,7 @@ print ("scipy saxpy", t3-t2)
 
 af = numpy.asfortranarray(a)
 bf = numpy.asfortranarray(b)
-print ("af.shape", af.shape, "a.shape", a.shape)
+print ("af.shape", af.shape, "a.shape", a.shape, "af.dtype", af.dtype)
 t2 = time.time()
 for i in range(N):
     out_scipy_f = daxpy(af,bf,a=A)
