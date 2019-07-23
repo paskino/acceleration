@@ -80,14 +80,10 @@ DLL_EXPORT int pmaximum(float * x, float * y, float * out, long size) {
 }
 
 
-DLL_EXPORT int psaxpby(float * x, float * y, float * out, float a, float b, long size){
+DLL_EXPORT int saxpby(float * x, float * y, float * out, float a, float b, long size){
     long i = 0;
 #pragma omp parallel
 {
-//#pragma omp single
-//{
-//		printf("current number of threads %d\n", omp_get_num_threads());
-//}
 #pragma omp for
     for (i=0; i < size; i++)
     {
@@ -96,4 +92,18 @@ DLL_EXPORT int psaxpby(float * x, float * y, float * out, float a, float b, long
 }
     return 0;
     
+}
+
+DLL_EXPORT int daxpby(double * x, double * y, double * out, double a, double b, long size) {
+	long i = 0;
+#pragma omp parallel
+	{
+#pragma omp for
+		for (i = 0; i < size; i++)
+		{
+			*(out + i) = a * (*(x + i)) + b * (*(y + i));
+		}
+	}
+	return 0;
+
 }
