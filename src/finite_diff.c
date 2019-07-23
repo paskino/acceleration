@@ -1,7 +1,4 @@
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "omp.h"
+#include "finite_diff.h"
 
 int main(int argc, char **argv){
 
@@ -10,7 +7,7 @@ int main(int argc, char **argv){
 
 }
 
-int fdiff_for(float *inimage, float *outimage, long nx, long ny, int direction ){
+DLL_EXPORT int fdiff_for(float *inimage, float *outimage, long nx, long ny, int direction ){
     long index_low, index_high, i, j;
     if (direction == 0){
         // assuming the image is stored as C array Y,X
@@ -41,7 +38,7 @@ int fdiff_for(float *inimage, float *outimage, long nx, long ny, int direction )
 
 }
 
-int fdiff_for_unrolled(float *inimage, float *outimage, long nx, long ny, int direction ){
+DLL_EXPORT int fdiff_for_unrolled(float *inimage, float *outimage, long nx, long ny, int direction ){
     long index_low, index_high, i, j;
     if (direction == 0){
         // assuming the image is stored as C array Y,X
@@ -71,11 +68,11 @@ int fdiff_for_unrolled(float *inimage, float *outimage, long nx, long ny, int di
 
 }
 
-int fdiff_for_simd(float *inimage, float *outimage, long nx, long ny, int direction ){
+DLL_EXPORT int fdiff_for_simd(float *inimage, float *outimage, long nx, long ny, int direction ){
     long index_low, index_high, i, j;
     if (direction == 0){
         // assuming the image is stored as C array Y,X
-        #pragma omp simd
+        //#pragma omp simd
         for (i=0;i<ny*(nx-1); i++){
             //for (i=0;i<nx-1; i++){
                 index_low = i ;
@@ -87,7 +84,7 @@ int fdiff_for_simd(float *inimage, float *outimage, long nx, long ny, int direct
         }
         
     } else if (direction == 1) {
-        #pragma omp simd
+        //#pragma omp simd
         for (i=0;i<nx*(ny-1); i++){
             //for (j=0;j<ny-1; j++){
                 index_low = i ;
@@ -103,7 +100,7 @@ int fdiff_for_simd(float *inimage, float *outimage, long nx, long ny, int direct
 
 }
 
-int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int direction ){
+DLL_EXPORT int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int direction ){
     long index_low, index_high, i,j;
     if (direction == 0){
         // assuming the image is stored as C array Y,X
@@ -135,7 +132,7 @@ int fdiff_for_parallel(float *inimage, float *outimage, long nx, long ny, int di
 
 }
 
-int fdiff_parallel_for_simd(float *inimage, float *outimagex, float *outimagey, long nx, long ny){
+DLL_EXPORT int fdiff_parallel_for_simd(float *inimage, float *outimagex, float *outimagey, long nx, long ny){
     int i=0;
     float *outimages[2];
     outimages[0] = outimagex;
@@ -150,7 +147,7 @@ int fdiff_parallel_for_simd(float *inimage, float *outimagex, float *outimagey, 
     return ret[0]+ret[1];
 }
 
-int fdiff_parallel_whole(float *inimage, float *outimagex, float *outimagey, long nx, long ny){
+DLL_EXPORT int fdiff_parallel_whole(float *inimage, float *outimagex, float *outimagey, long nx, long ny){
     int i=0;
     float *outimages[2];
     outimages[0] = outimagex;
@@ -166,7 +163,7 @@ int fdiff_parallel_whole(float *inimage, float *outimagex, float *outimagey, lon
 }
 
 
-int fdiff_for_parallel_concurrent(float *inimage, float *outimagex, float *outimagey,  long nx, long ny){
+DLL_EXPORT int fdiff_for_parallel_concurrent(float *inimage, float *outimagex, float *outimagey,  long nx, long ny){
     long index_low, index_high_x, index_high_y, i,j;
     
     #pragma omp parallel for private(index_high_x, index_high_y, index_low) shared(i,j)

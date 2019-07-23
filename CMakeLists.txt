@@ -124,20 +124,20 @@ if (BUILD_PYTHON_WRAPPER)
         if (WIN32)
           add_custom_command(OUTPUT ${OUTPUT}
                         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src
-                        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/ccpi ${CMAKE_CURRENT_BINARY_DIR}/ccpi
+                        #COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff ${CMAKE_CURRENT_BINARY_DIR}/edo
                         COMMAND ${CMAKE_COMMAND} -E env CIL_VERSION=${CIL_VERSION}
-                                                        PREFIX=${CMAKE_SOURCE_DIR}/src/Core
-                                                        LIBRARY_INC=${CMAKE_SOURCE_DIR}/src/Core
-                                                        LIBRARY_LIB=${CMAKE_BINARY_DIR}/src/Core/${CMAKE_BUILD_TYPE}
+                                                        PREFIX=${CMAKE_SOURCE_DIR}/src/
+                                                        LIBRARY_INC=${CMAKE_SOURCE_DIR}/src/include
+                                                        LIBRARY_LIB=${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}
                                                         ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext --inplace
                         COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
                         DEPENDS cilreg)
         else()
           add_custom_command(OUTPUT ${OUTPUT}
                         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src
-                        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff ${CMAKE_CURRENT_BINARY_DIR}/edo
+                        #COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff ${CMAKE_CURRENT_BINARY_DIR}/edo
                         COMMAND ${CMAKE_COMMAND} -E env PREFIX=${CMAKE_SOURCE_DIR}/src/
-                                                        LIBRARY_INC=${CMAKE_SOURCE_DIR}/src
+                                                        LIBRARY_INC=${CMAKE_SOURCE_DIR}/src/include
                                                         LIBRARY_LIB=${CMAKE_BINARY_DIR}/
                                                         ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext --inplace
                         COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}

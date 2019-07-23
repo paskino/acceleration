@@ -1,8 +1,4 @@
-#include <math.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include "omp.h"
-#include "dll_export.h"
+#include "parallel_algebra.h"
 
 
 DLL_EXPORT int padd(float * x, float * y, float * out, long size){
