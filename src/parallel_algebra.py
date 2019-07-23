@@ -3,6 +3,14 @@ import numpy
 import os
 import time
 from scipy.linalg.blas import daxpy, saxpy
+# add frompyfunc
+
+
+def pyaxpby(x,y,out,a,b):
+    out = a*x+b*y
+n_axpby = numpy.frompyfunc(lambda x,y,a,b: a*x + b*y, 4,1)
+n_axpby_ = numpy.frompyfunc(pyaxpby, 5,0)
+
 
 
 print ("current dir ", os.path.abspath(__file__))
@@ -93,8 +101,9 @@ if dtype == numpy.float32:
                               ctypes.c_long]                  # type of size of first array 
     
 
+#out_nfrom = n_axpby(a,b,A,B)
 
-N = 100
+N = 10
 fdiff.saxpby(a_p, b_p, out_p, A, B, a.size)
 t0 = time.time()
 for i in range(N):
@@ -136,11 +145,20 @@ for i in range(N):
 t3 = time.time()
 print ("scipy saxpy fortran", t3-t2)
 
+
+out_nfrom = n_axpby(a,b,A,B)
+t2 = time.time()
+for i in range(N):
+    out_nfrom = n_axpby(a,b,A,B)
+t3 = time.time()
+print ("numpy frompyfunc", t3-t2)
+
 out_scipy_f_c = numpy.ascontiguousarray(out_scipy_f)
 print ("out_scipy_f.shape", out_scipy_f.shape, "out_scipy_f_c.shape", out_scipy_f_c.shape)
 numpy.testing.assert_array_equal(out, out_numpy)
 numpy.testing.assert_array_equal(out_numpy, out_scipy)
 numpy.testing.assert_array_almost_equal(out_numpy, numpy.ascontiguousarray(out_scipy_f))
+numpy.testing.assert_array_almost_equal(out_numpy, out_nfrom)
 
 
 
