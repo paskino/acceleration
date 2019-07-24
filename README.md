@@ -3,6 +3,7 @@ benchmarking image gradient and numpy
 
 ## Benchmarking AXPBY
 
+Code to be found [here](https://github.com/paskino/acceleration/blob/master/src/parallel_algebra.py)
 Core numpy array operations are well optimised for single thread operations and there is no benefit of using multithreading (like OpenMP) to do the basic algebric operations `+-*/power minimum maximum`. Comparisons to be added.
 
 Doing multiple operations like `a*X + b*Y` where `a,b` are scalars and `X,Y` are numpy arrays can in fact benefit from multithreading. 
@@ -20,9 +21,30 @@ tmp = numpy.empty_like(X)
 numpy.multiply(X,a,out=out)
 numpy.multiply(Y,b,tmp)
 out += tmp
+
+# frompyfunc
+n_axpby = numpy.frompyfunc(lambda x,y,a,b: a*x + b*y, 4,1)
+out = n_axpby(X,Y,a,b)
 ```
 
 As you can see you need to pre allocate 2 arrays of the same size of the output to get to the result. There are 3 loops over all the elements of the arrays being processed. 
+
+### Python map
+
+One could also use the `map` function from Python. 
+
+```python
+
+from itertools import chain
+
+out_map =  numpy.fromiter(
+    chain.from_iterable(
+        map(lambda var: a * var[0] + b * var[1], zip(X,Y))), dtype=a.dtype
+	).reshape(a.shape)
+
+```
+
+Notice that here the `lambda` is getting the constants `a,b` from the parent scope. So it's not quite reccommended to use this method.
 
 ### C/OpenMP
 
@@ -79,7 +101,25 @@ out = daxpy(af,bf,a=a)
 # the output C-contiguous
 out_C = numpy.ascontiguousarray(out)
 ```
+### Numba
 
+Lastly a very simple implementation with `jit` and `prange` (parallel range) from [`numba`](https://numba.pydata.org/)
+
+```python
+from numba import jit, prange
+
+@jit(nopython=True)
+def numba_axpby(x,y,out,ca,cb):
+    for i in prange(x.size):
+        out.flat[i] = ca*x.flat[i] + cb*y.flat[i]
+
+out = numpy.empty_like(X)
+numba_axpby(X,Y,out,a,b)
+
+
+```
+
+### Results
 
 |method|time (s) 100 iterations|
 |--|--|
