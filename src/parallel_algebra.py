@@ -3,15 +3,10 @@ import numpy
 import os
 import time
 from scipy.linalg.blas import daxpy, saxpy
-# add frompyfunc
+import functools
 
 
-def pyaxpby(x,y,out,a,b):
-    out = a*x+b*y
 n_axpby = numpy.frompyfunc(lambda x,y,a,b: a*x + b*y, 4,1)
-n_axpby_ = numpy.frompyfunc(pyaxpby, 5,0)
-
-
 
 print ("current dir ", os.path.abspath(__file__))
 shape = (2048,1024)
@@ -22,8 +17,8 @@ B = numpy.float32(1.)
 numpy.random.seed(1)
 a = numpy.random.random(shape)
 b = numpy.random.random(shape)
-#a = 2.5 * numpy.ones(shape)
-#b = 1. * numpy.ones(shape)
+a = 2.5 * numpy.ones(shape)
+b = 1. * numpy.ones(shape)
 
 dll = os.path.abspath(os.path.join( 
          os.path.abspath(os.path.dirname(__file__)),
@@ -129,6 +124,13 @@ for i in range(N):
 t3 = time.time()
 print ("numpy memopt", t3-t2)
 
+t2 = time.time()
+for i in range(N):
+    out_numpy2 = A*a + B*b
+t3 = time.time()
+print ("numpy no memopt", t3-t2)
+
+
 
 t2 = time.time()
 for i in range(N):
@@ -148,10 +150,22 @@ print ("scipy saxpy fortran", t3-t2)
 
 out_nfrom = n_axpby(a,b,A,B)
 t2 = time.time()
-for i in range(N):
+for i in range(1):
     out_nfrom = n_axpby(a,b,A,B)
 t3 = time.time()
 print ("numpy frompyfunc", t3-t2)
+
+from itertools import chain
+
+out_map =  numpy.fromiter(chain.from_iterable(map(lambda y: A * y[0] + B * y[1], zip(a,b))), dtype=a.dtype).reshape(a.shape)
+t2 = time.time()
+for i in range(N):
+    out_map = numpy.fromiter(chain.from_iterable(map(lambda y: A * y[0] + B * y[1], zip(a,b))), dtype=a.dtype).reshape(a.shape)
+t3 = time.time()
+print ("map", t3-t2)
+
+
+
 
 out_scipy_f_c = numpy.ascontiguousarray(out_scipy_f)
 print ("out_scipy_f.shape", out_scipy_f.shape, "out_scipy_f_c.shape", out_scipy_f_c.shape)
@@ -159,6 +173,7 @@ numpy.testing.assert_array_equal(out, out_numpy)
 numpy.testing.assert_array_equal(out_numpy, out_scipy)
 numpy.testing.assert_array_almost_equal(out_numpy, numpy.ascontiguousarray(out_scipy_f))
 numpy.testing.assert_array_almost_equal(out_numpy, out_nfrom)
+numpy.testing.assert_array_almost_equal(out_numpy, numpy.asarray(list(out_map)))
 
 
 
