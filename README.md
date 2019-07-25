@@ -129,6 +129,6 @@ numba_axpby(X,Y,out,a,b)
 |intel numpy no memopt |1.36|
 |intel scipy saxpy |4.29|
 |intel scipy saxpy fortran |2.45|
-|numpy| frompyfunc 0.44|
+|numpy frompyfunc | 0.44|
 |map |12.87|
 |numba| 0.27|
