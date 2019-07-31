@@ -1,5 +1,5 @@
 # acceleration
-benchmarking image gradient and numpy
+Benchmarking different tools to speed up computationally intensive code in Python.
 
 ## Benchmarking AXPBY
 
