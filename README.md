@@ -84,6 +84,12 @@ There are 2 advantages here:
 1. there is need only to allocate the memory for the result, 
 2. there is only one cycle over the elements of the arrays
 
+Using this simple C/OpenMP function can be done with `ctypes`. Here we propose 2 version, 
+1. [`axpby`](https://github.com/paskino/acceleration/blob/master/src/parallel_algebra.py#L31) where the call to the function is done from within a Python function where the right types are chosen
+2. a simple version where the user selects the right `ctypes argtypes` before the call. 
+
+The difference between the 2 methods is that in 1 all calls will select the proper function to call (float or double). In 2 only one function will be used and the definition of the type is in the hands of the users.
+
 ### BLAS (SciPy)
 
 Using a BLAS from SciPy may be beneficial. However, the main disadvantage here is that the arrays must be Fortran-contiguous which will reduce the speed, if you work with C-contiguous arrays. Additionally BLAS implement `axpy` : `a*X+Y` rather than `axpby`.
