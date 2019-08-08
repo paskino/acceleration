@@ -83,12 +83,13 @@ DLL_EXPORT int daxpby(double * x, double * y, double * out, double a, double b, 
 There are 2 advantages here: 
 1. there is need only to allocate the memory for the result, 
 2. there is only one cycle over the elements of the arrays
+However, the little C code must be compiled as shared library.
 
 Using this simple C/OpenMP function can be done with `ctypes`. Here we propose 2 version, 
 1. [`axpby`](https://github.com/paskino/acceleration/blob/master/src/parallel_algebra.py#L31) where the call to the function is done from within a Python function where the right types are chosen
 2. a simple version where the user selects the right `ctypes argtypes` before the call. 
 
-The difference between the 2 methods is that in 1 all calls will select the proper function to call (float or double). In 2 only one function will be used and the definition of the type is in the hands of the users.
+The difference between the 2 methods is that in 1 all calls will select the proper function to call (float or double). In 2 the appropriate types for the C functions have been established before the call. This part is pretty [long](https://github.com/paskino/acceleration/blob/master/src/parallel_algebra.py#L34L71) and not particularly pythonesque. Clearly in method 1 there is an overhead because for each call we execute som 40 lines of (Python) code before the actual real call. 
 
 ### BLAS (SciPy)
 
