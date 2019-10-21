@@ -10,7 +10,7 @@ from numba import jit, prange, njit
 n_axpby = numpy.frompyfunc(lambda x,y,a,b: a*x + b*y, 4,1)
 
 print ("current dir ", os.path.abspath(__file__))
-shape = (2048,2048)
+shape = (2048,1024)
 
 A = numpy.float32(2.)
 B = numpy.float32(1.)
@@ -109,7 +109,7 @@ def numba_axpby(x,y,out,ca,cb):
 
 
 
-N = 10
+N = 100
 
 fdiff.saxpby(a_p, b_p, out_p, A, B, a.size)
 t0 = time.time()

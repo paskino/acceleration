@@ -128,14 +128,19 @@ numba_axpby(X,Y,out,a,b)
 
 ### Results
 
-|method|time (s) 100 iterations|
-|--|--|
-|fdiff.saxpby| 0.28|
-|axpby |0.32|
-|intel numpy memopt |0.64|
-|intel numpy no memopt |1.36|
-|intel scipy saxpy |4.29|
-|intel scipy saxpy fortran |2.45|
-|numpy frompyfunc | 0.44|
-|map |12.87|
-|numba| 0.27|
+I've run tests on 2 machines with different characteristics. Do not compare across columns.
+Also the results are very dependent on the size of the problem. 
+
+Especially the numba implementation on Linux seems to have large overhead for small problems.
+
+|method|Windows time (s) 100 iterations|Linux time (s) 100 iterations 2048**2 |
+|--|--|--|
+|fdiff.saxpby| 0.28| 0.15 |
+|axpby |0.32| 0.18 |
+|intel numpy memopt |0.64| 1.04 |
+|intel numpy no memopt |1.36| 1.31 |
+|intel scipy saxpy |4.29| 4.15 |
+|intel scipy saxpy fortran |2.45| 3.76 |
+|numpy frompyfunc | 0.44| 1.23 |
+|map |12.87| 64.33 |
+|numba| 0.27| 0.69 |
