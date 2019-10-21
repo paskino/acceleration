@@ -136,7 +136,7 @@ The numba implementation seems to scale as the small C library wrt the problem s
 |method|Windows time (s) 100 iterations|Linux time (s) 100 iterations 2048^2 |Linux time (s) 100 iterations 1024^2 |
 |--|--|--|--|
 |fdiff.saxpby| 0.28| 0.15 |0.010|
-|axpby |0.32| 0.18 |0.15 |0.029|
+|axpby |0.32| 0.18 |0.029|
 |intel numpy memopt |0.64| 0.96 |0.21 |
 |intel numpy no memopt |1.36| 1.32 |0.17 |
 |intel scipy saxpy |4.29| 4.31 |0.95 |
