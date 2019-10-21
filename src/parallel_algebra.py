@@ -4,12 +4,13 @@ import os
 import time
 from scipy.linalg.blas import daxpy, saxpy
 import functools
+from numba import jit, prange, njit
 
 
 n_axpby = numpy.frompyfunc(lambda x,y,a,b: a*x + b*y, 4,1)
 
 print ("current dir ", os.path.abspath(__file__))
-shape = (2048,1024)
+shape = (2048,2048)
 
 A = numpy.float32(2.)
 B = numpy.float32(1.)
@@ -22,8 +23,11 @@ b = 1. * numpy.ones(shape)
 
 dll = os.path.abspath(os.path.join( 
          os.path.abspath(os.path.dirname(__file__)),
-         'fdiff.dll')
+         'libfdiff.dll')
 )
+
+dll = 'libfdiff.so'
+
 print ("dll location", dll)
 fdiff = ctypes.cdll.LoadLibrary(dll)
 
@@ -98,20 +102,35 @@ if dtype == numpy.float32:
 
 #out_nfrom = n_axpby(a,b,A,B)
 
+@jit(nopython=True, parallel=True)
+def numba_axpby(x,y,out,ca,cb):
+    for i in prange(x.size):
+        out.flat[i] = ca*x.flat[i] + cb*y.flat[i]
+
+
+
 N = 10
+
 fdiff.saxpby(a_p, b_p, out_p, A, B, a.size)
 t0 = time.time()
 for i in range(N):
     fdiff.saxpby(a_p, b_p, out_p, A, B, a.size)
 t1 = time.time()
-print ("saxpby", t1-t0)
+print ("lib saxpby", t1-t0)
 
 axpby(a, b, out, A, B, numpy.float32)
 t0 = time.time()
 for i in range(N):
     axpby(a, b, out, A, B, numpy.float32)
 t1 = time.time()
-print ("axpby", t1-t0)
+print ("lib axpby", t1-t0)
+
+fdiff.saxpby(a_p, b_p, out_p, A, B, a.size)
+t0 = time.time()
+for i in range(N):
+    fdiff.saxpby(a_p, b_p, out_p, A, B, a.size)
+t1 = time.time()
+print ("lib saxpby", t1-t0)
 
 out_numpy = numpy.empty_like(a)
 out_numpy2 = numpy.empty_like(a)
@@ -164,8 +183,12 @@ for i in range(N):
 t3 = time.time()
 print ("map", t3-t2)
 
-
-
+out_numba = numpy.empty_like(a)
+t4 = time.time()
+for i in range(N):
+    numba_axpby(a,b,out_numba,A,B)
+t5 = time.time()
+print ("numba", t5-t4)
 
 out_scipy_f_c = numpy.ascontiguousarray(out_scipy_f)
 print ("out_scipy_f.shape", out_scipy_f.shape, "out_scipy_f_c.shape", out_scipy_f_c.shape)
@@ -175,5 +198,4 @@ numpy.testing.assert_array_almost_equal(out_numpy, numpy.ascontiguousarray(out_s
 numpy.testing.assert_array_almost_equal(out_numpy, out_nfrom)
 numpy.testing.assert_array_almost_equal(out_numpy, numpy.asarray(list(out_map)))
 
-
-
+numpy.testing.assert_array_almost_equal(out_numpy, out_numba)
