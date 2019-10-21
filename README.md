@@ -131,16 +131,16 @@ numba_axpby(X,Y,out,a,b)
 I've run tests on 2 machines with different characteristics. Do not compare across columns.
 Also the results are very dependent on the size of the problem. 
 
-Especially the numba implementation on Linux seems to have large overhead for small problems.
+The numba implementation seems to scale as the small C library wrt the problem size. Numpy implementations seem to be more optimised and speed is dependent on cache, I presume.
 
-|method|Windows time (s) 100 iterations|Linux time (s) 100 iterations 2048**2 |
-|--|--|--|
-|fdiff.saxpby| 0.28| 0.15 |
-|axpby |0.32| 0.18 |
-|intel numpy memopt |0.64| 1.04 |
-|intel numpy no memopt |1.36| 1.31 |
-|intel scipy saxpy |4.29| 4.15 |
-|intel scipy saxpy fortran |2.45| 3.76 |
-|numpy frompyfunc | 0.44| 1.23 |
-|map |12.87| 64.33 |
-|numba| 0.27| 0.69 |
+|method|Windows time (s) 100 iterations|Linux time (s) 100 iterations 2048^2 |Linux time (s) 100 iterations 1024^2 |
+|--|--|--|--|
+|fdiff.saxpby| 0.28| 0.15 |0.010|
+|axpby |0.32| 0.18 |0.15 |0.029|
+|intel numpy memopt |0.64| 0.96 |0.21 |
+|intel numpy no memopt |1.36| 1.32 |0.17 |
+|intel scipy saxpy |4.29| 4.31 |0.95 |
+|intel scipy saxpy fortran |2.45| 3.94 |0.38 |
+|numpy frompyfunc | 0.44| 1.29 |0.29 |
+|map |12.87| 53.68 |16.7 |
+|numba| 0.27| 0.18 |0.021 |
