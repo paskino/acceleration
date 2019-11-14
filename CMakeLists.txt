@@ -57,7 +57,7 @@ install(TARGETS fdiff
 	CONFIGURATIONS ${CMAKE_BUILD_TYPE} 
 	)
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/include/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}) 
 
 
@@ -98,8 +98,8 @@ if (BUILD_PYTHON_WRAPPER)
 
   if (PYTHONINTERP_FOUND)
       message("Python found " ${PYTHON_EXECUTABLE})
-      set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/src/setup.py.in")
-      set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup.py")
+      set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/src/setup-parallel-algebra.py.in")
+      set(SETUP_PY    "${CMAKE_CURRENT_BINARY_DIR}/setup-parallel-algebra.py")
       #set(DEPS        "${CMAKE_CURRENT_SOURCE_DIR}/module/__init__.py")
       set (DEPS       "${CMAKE_BINARY_DIR}/")
       set(OUTPUT      "${CMAKE_CURRENT_BINARY_DIR}/build/timestamp")
@@ -124,10 +124,10 @@ if (BUILD_PYTHON_WRAPPER)
         if (WIN32)
           add_custom_command(OUTPUT ${OUTPUT}
                         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_BINARY_DIR}/src
-                        #COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff ${CMAKE_CURRENT_BINARY_DIR}/edo
+                         #COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff ${CMAKE_CURRENT_BINARY_DIR}/edo
                         COMMAND ${CMAKE_COMMAND} -E env CIL_VERSION=${CIL_VERSION}
                                                         PREFIX=${CMAKE_SOURCE_DIR}/src/
-                                                        LIBRARY_INC=${CMAKE_SOURCE_DIR}/src/include
+                                                       LIBRARY_INC=${CMAKE_SOURCE_DIR}/src/include
                                                         LIBRARY_LIB=${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}
                                                         ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext --inplace
                         COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
@@ -141,11 +141,13 @@ if (BUILD_PYTHON_WRAPPER)
                                                         LIBRARY_LIB=${CMAKE_BINARY_DIR}/
                                                         ${PYTHON_EXECUTABLE} ${SETUP_PY} build_ext --inplace
                         COMMAND ${CMAKE_COMMAND} -E touch ${OUTPUT}
-                        DEPENDS fdiff)
+                        #DEPENDS fdiff
+                        )
         endif()
         #set (PYTHON_DEST ${CMAKE_INSTALL_PREFIX}/python/)
         install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/edo 
                 DESTINATION ${PYTHON_DEST})
+        #file(TOUCH ${PYTHON_DEST}/edo/__init__.py)
         
       endif()
       

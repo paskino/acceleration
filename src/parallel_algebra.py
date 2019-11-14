@@ -5,12 +5,16 @@ import time
 from scipy.linalg.blas import daxpy, saxpy
 import functools
 from numba import jit, prange, njit
+import sys
 
 
 n_axpby = numpy.frompyfunc(lambda x,y,a,b: a*x + b*y, 4,1)
 
 print ("current dir ", os.path.abspath(__file__))
-shape = (2048,1024)
+N = 1048
+if len(sys.argv) > 1:
+    N = int(sys.argv[1])
+shape = (N, N)
 
 A = numpy.float32(2.)
 B = numpy.float32(1.)
@@ -184,6 +188,7 @@ t3 = time.time()
 print ("map", t3-t2)
 
 out_numba = numpy.empty_like(a)
+numba_axpby(a,b,out_numba,A,B)
 t4 = time.time()
 for i in range(N):
     numba_axpby(a,b,out_numba,A,B)
