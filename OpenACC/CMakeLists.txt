@@ -4,7 +4,7 @@ set (LANGUAGES "C;CXX")
   
 project(openacc_lesson LANGUAGES ${LANGUAGES})
 
-#  cmake ../ -DOpenACC_ACCEL_TARGET==tesla:cc60 -DCMAKE_C_COMPILER=pgcc -DCMAKE_CXX_COMPILER=pgc++
+#  cmake ../ -DOpenACC_ACCEL_TARGET=tesla:cc60 -DCMAKE_C_COMPILER=pgcc -DCMAKE_CXX_COMPILER=pgc++
 find_package(OpenACC REQUIRED)
 
 

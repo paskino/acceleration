@@ -1,24 +1,31 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.10)
+
+set (LANGUAGES "C")
+project(acceleration_tests LANGUAGES ${LANGUAGES})
 
 set (CMAKE_C_STANDARD 11)
 
+find_package(OpenACC)
+
 find_package(OpenMP REQUIRED)
-if (OPENMP_FOUND)
+if (OpenMP_FOUND)
     set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
    set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_SHARED_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
    set (CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_STATIC_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
    if (UNIX)
-    set (FLAGS "-O3 -funsigned-char -Wall  -Wl,--no-undefined -march=native")  
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
-    set (CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
-  
+    if (CMAKE_COMPILER_ID STREQUAL "GNU")
+      set (FLAGS "-O3 -funsigned-char -Wall  -Wl,--no-undefined -march=native")  
+      set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
+      set (CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
+    
 
-    set (EXTRA_LIBRARIES 
-      "gomp"
-      "m"
-      )
+      set (EXTRA_LIBRARIES 
+        "gomp"
+        "m"
+        )
+      endif()
    endif()
 endif()
 
@@ -40,8 +47,10 @@ message("CMAKE_STATIC_LINKER_FLAGS ${CMAKE_STATIC_LINKER_FLAGS}")
 add_library(fdiff SHARED ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff.c
                          ${CMAKE_CURRENT_SOURCE_DIR}/src/parallel_algebra.c)
 #add_executable(fdiffexe ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff.c)
+###########################################################
+include(openacc_build.cmake)
 
-
+###########################################################
 
 target_link_libraries(fdiff ${EXTRA_LIBRARIES} )
 include_directories(fdiff PUBLIC 
@@ -50,7 +59,7 @@ include_directories(fdiff PUBLIC
 
 ## Install
 include(GNUInstallDirs)
-install(TARGETS fdiff
+install(TARGETS fdiff fdiff_acc
 	RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib

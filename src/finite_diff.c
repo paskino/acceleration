@@ -104,7 +104,7 @@ DLL_EXPORT int fdiff_for_parallel(float *inimage, float *outimage, long nx, long
     long index_low, index_high, i,j;
     if (direction == 0){
         // assuming the image is stored as C array Y,X
-        #pragma omp parallel for private(index_high, index_low) shared(i)
+        #pragma omp parallel for private(index_high, index_low, i)
         for (i=0;i<ny*(nx-1); i++){
             //for (i=0;i<nx-1; i++){
                 index_low = i ;
@@ -116,7 +116,7 @@ DLL_EXPORT int fdiff_for_parallel(float *inimage, float *outimage, long nx, long
         }
         
     } else if (direction == 1) {
-        #pragma omp parallel for private(index_high, index_low) shared(i,j)
+        #pragma omp parallel for private(index_high, index_low , i,j)
         for (j=0;j<ny-1; j++){
             for (i=0;i<nx; i++){
                 index_low = i + j * nx;
@@ -166,7 +166,7 @@ DLL_EXPORT int fdiff_parallel_whole(float *inimage, float *outimagex, float *out
 DLL_EXPORT int fdiff_for_parallel_concurrent(float *inimage, float *outimagex, float *outimagey,  long nx, long ny){
     long index_low, index_high_x, index_high_y, i,j;
     
-    #pragma omp parallel for private(index_high_x, index_high_y, index_low) shared(i,j)
+    #pragma omp parallel for private(index_high_x, index_high_y, index_low, i,j)
     for (j=0;j<ny-1; j++){
         for (i=0;i<nx; i++){
             index_low = i + j * nx;
