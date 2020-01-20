@@ -6,16 +6,23 @@ project(acceleration_tests LANGUAGES ${LANGUAGES})
 set (CMAKE_C_STANDARD 11)
 
 find_package(OpenACC)
+message ("Compiler ID ${CMAKE_C_COMPILER_ID}")
+if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+  set (EXTRA_LIBRARIES "omp")
+  if (NOT OpenMP_LIBRARY_PATH)
+    message (FATAL_ERROR "Please provide the location of libomp.dylib with the variable OpenMP_LIBRARY_PATH")
+  endif()
+  if (NOT ${OpenMP_${lang}_INCLUDE_DIR})
+    message (FATAL_ERROR "Please specify the OpenMP_${lang}_INCLUDE_DIR directory")
+  endif()
+endif()
 
 find_package(OpenMP REQUIRED)
 if (OpenMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
-   set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_SHARED_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
-   set (CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_STATIC_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
    if (UNIX)
-    if (CMAKE_COMPILER_ID STREQUAL "GNU")
+message(STATUS "UNIX found")
+    if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+message(STATUS "Compiler ${CMAKE_COMPILER_ID} found")
       set (FLAGS "-O3 -funsigned-char -Wall  -Wl,--no-undefined -march=native")  
       set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
       set (CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
@@ -25,8 +32,23 @@ if (OpenMP_FOUND)
         "gomp"
         "m"
         )
-      endif()
+    elseif(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+message(STATUS "Compiler ${CMAKE_COMPILER_ID} found")
+      set(EXTRA_C_INCLUDE_DIR "${EXTRA_C_INCLUDE_DIR} ${OpenMP_C_INCLUDE_DIR}")
+      message(WARNING "EXTRA_C_INCLUDE_DIR ${EXTRA_C_INCLUDE_DIR}")
+      set (OpenMP_C_LIBRARY "omp")
+      set (OpenMP_C_LIBRARY_PATH ${OpenMP_LIBRARY_PATH})
+      set (OpenMP_LINKER_FLAGS "${OpenMP_SHARED_LINKER_FLAGS} -L${OpenMP_LIBRARY_PATH}")
+      set (OpenMP_C_FLAGS "${OpenMP_C_FLAGS} -L${OpenMP_LIBRARY_PATH}")
+      set (EXTRA_LIBRARIES ${OpenMP_C_LIBRARY})
+      message(STATUS "OpenMP found ${EXTRA_LIBRARIES}")
+    endif()
    endif()
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS} ${OpenMP_C_FLAGS}")
+   set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_SHARED_LINKER_FLAGS} ${OpenMP_C_FLAGS}")
+   set (CMAKE_STATIC_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_STATIC_LINKER_FLAGS} ${OpenMP_C_FLAGS}")
 endif()
 
 if (WIN32)
@@ -46,20 +68,25 @@ message("CMAKE_STATIC_LINKER_FLAGS ${CMAKE_STATIC_LINKER_FLAGS}")
 
 add_library(fdiff SHARED ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff.c
                          ${CMAKE_CURRENT_SOURCE_DIR}/src/parallel_algebra.c)
-#add_executable(fdiffexe ${CMAKE_CURRENT_SOURCE_DIR}/src/finite_diff.c)
+add_executable(test_openmp ${CMAKE_CURRENT_SOURCE_DIR}/src/test_openmp.c)
+target_link_libraries(test_openmp fdiff)
 ###########################################################
 include(openacc_build.cmake)
 
 ###########################################################
 
+message(STATUS "Compiler ID ${CMAKE_C_COMPILER_ID}")
+if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+endif()
+
 target_link_libraries(fdiff ${EXTRA_LIBRARIES} )
 include_directories(fdiff PUBLIC 
-				  ${CMAKE_CURRENT_SOURCE_DIR}/src/include
+			  ${CMAKE_CURRENT_SOURCE_DIR}/src/include
+ ${EXTRA_C_INCLUDE_DIR}
 		          )
-
 ## Install
 include(GNUInstallDirs)
-install(TARGETS fdiff fdiff_acc
+install(TARGETS fdiff 
 	RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
