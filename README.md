@@ -144,3 +144,11 @@ The numba implementation seems to scale as the small C library wrt the problem s
 |numpy frompyfunc | 0.44| 1.29 |0.29 |
 |map |12.87| 53.68 |16.7 |
 |numba| 0.27| 0.18 |0.021 |
+
+
+### Apple Clang
+
+```
+conda install openmp -c conda-forge
+cmake .. -DOpenMP_C_LIBRARY_PATH:FILEPATH=${CONDA_PREFIX}/lib -DOpenMP_LIBRARY_PATH:PATH=${CONDA_PREFIX}/lib -DOpenMP_C_INCLUDE_DIR:PATH=${CONDA_PREFIX}/include
+```
